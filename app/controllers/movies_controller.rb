@@ -8,6 +8,14 @@ class MoviesController < ApplicationController
 
   def index
     @movies = Movie.all
+    if params[:sortby] == 'title'
+      @movies = @movies.sort_by { |m| m.title }
+      @title_header_class = 'hilite'
+    elsif params[:sortby] == 'release_date'
+      @movies = @movies.sort_by { |m| m.release_date }
+      @release_date_header_class = 'hilite'
+    end
+    # redirect_to_movies_path
   end
 
   def new
