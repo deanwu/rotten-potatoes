@@ -7,7 +7,27 @@ class MoviesController < ApplicationController
   end
 
   def index
+    debugger
     @movies = Movie.all
+
+    # check if there are existing settings
+    if params[:ratings].nil? and params[:sortby].nil?
+      if not session[:ratings].nil? or not session[:sortby].nil?
+        redirect_to movies_path(:sortby => session[:sortby], :ratings => session[:ratings])
+      end
+    end
+
+    if params[:ratings].nil?
+      @ratings = Movie.ratings
+    else
+      @ratings = params[:ratings]
+    end
+    session[:ratings] = @ratings
+
+    # if there are some ratings checked, then filter out movies of other ratings
+    @movies = @movies.find_all { |m| @ratings.include?(m.rating) }
+
+    # sort by title or release date if column header was clicked
     if params[:sortby] == 'title'
       @movies = @movies.sort_by { |m| m.title }
       @title_header_class = 'hilite'
@@ -15,8 +35,18 @@ class MoviesController < ApplicationController
       @movies = @movies.sort_by { |m| m.release_date }
       @release_date_header_class = 'hilite'
     end
-    # redirect_to_movies_path
-  end
+    session[:sortby] = params[:sortby]
+
+    # make all_ratings hash with boolean value representing whether or not box is checked
+    @all_ratings = Hash.new # needed for check boxes with possible ratings
+    Movie.ratings.each do |rating|
+      if not @ratings.nil? and @ratings.include?(rating)
+        @all_ratings[rating] = true
+      else
+        @all_ratings[rating] = false
+      end
+    end
+end
 
   def new
     # default: render 'new' template
