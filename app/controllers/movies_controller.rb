@@ -7,7 +7,6 @@ class MoviesController < ApplicationController
   end
 
   def index
-    debugger
     @movies = Movie.all
 
     # check if there are existing settings
